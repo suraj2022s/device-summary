@@ -134,7 +134,11 @@ def _reject_constant(name: str) -> Any:
 
 
 def _decode(raw: str | bytes, line_number: int) -> str:
-    """Step 1: return the line as text without its line ending."""
+    """Step 1: return the line as text.
+
+    The trailing "\\n" or "\\r\\n" is left in place: JSON ignores surrounding whitespace,
+    and the blank-line check below strips it.
+    """
     if isinstance(raw, bytes):
         try:
             text = raw.decode("utf-8")
@@ -145,7 +149,7 @@ def _decode(raw: str | bytes, line_number: int) -> str:
     if line_number == 1:
         # JSON Lines forbids a byte order mark, but some Windows editors add one.
         text = text.removeprefix(UTF8_BOM)
-    return text.removesuffix("\n").removesuffix("\r")
+    return text
 
 
 def _parse(text: str) -> Any:
