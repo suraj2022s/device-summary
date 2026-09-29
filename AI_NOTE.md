@@ -39,10 +39,12 @@ property-based tests, the HTTP API and CLI, CI and Docker, and the documentation
 - **Tests of the tests:** `scripts/check_mutations.py` plants 15 bugs, one at a time; the
   suite catches all 15.
 - **Real runs:** the server was started with Uvicorn and called with `curl` for the
-  sample (200), a missing file (500 problem details) and a wrong method (405).
+  sample (200), a missing file (500 problem details) and a wrong method (405). The
+  Docker image was also built and run locally (Docker Engine in WSL): 200 for the
+  sample, running as a non-root user, health check `healthy`, 500 for a missing file.
 - **Reproducibility:** a fresh clone installed with `uv sync --locked` passes every check
   on Windows and on Ubuntu (WSL); CI runs Ubuntu and Windows with Python 3.11–3.14 and
-  builds the Docker image.
+  builds and smoke-tests the Docker image.
 - **Mistakes the AI made, and how they were caught:** it once claimed in a commit message
   that a fix was done when it was not; it removed code as "redundant" that affected
   error messages; and it wrote a test that assumed platform-specific parser behaviour.

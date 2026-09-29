@@ -112,12 +112,14 @@ uvicorn device_summary.api:app
 
 On macOS or Linux, activate with `source .venv/bin/activate` instead.
 
-**With Docker** (built and smoke-tested in CI)
+**With Docker** (tested locally with Docker Engine 29 and in CI)
 
 ```
 docker build --tag device-summary .
 docker run --rm --publish 8000:8000 device-summary
 ```
+
+The container runs as a non-root user and has a health check on `/health`.
 
 ## Configuration
 
@@ -240,8 +242,9 @@ deliberate choice to go further, and is listed separately so it can be judged on
 
 ## Unfinished work
 
-- The Docker image is built and tested in CI only; Docker was not available on the
-  development machine.
+- The Docker image is single-stage, so it also carries the uv binaries (282 MB in
+  total); a multi-stage build would copy only the virtual environment into the final
+  image.
 - No authentication, rate limiting or TLS: this is a local tool behind no network edge.
 - Logging is plain text from the standard library; no structured logs or metrics.
 - Error `reason` text includes messages from Python's `json` module, which could be
