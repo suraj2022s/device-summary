@@ -14,7 +14,7 @@ device-summary = "device_summary.cli:main"
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28",
+    "httpx2>=2.13",
     "hypothesis>=6.160",
     "mypy>=1.18",
     "pytest>=8.4",
@@ -40,6 +40,7 @@ addopts = [
     "--cov-report=term-missing",
 ]
 xfail_strict = true
+filterwarnings = ["error"]
 
 [tool.coverage.report]
 fail_under = 100
