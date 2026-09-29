@@ -171,9 +171,12 @@ Where the brief leaves room for interpretation, these are the choices made (each
   empty line at the end of the file.
 - Input is UTF-8. Invalid UTF-8 is `BAD_JSON`. A byte order mark is tolerated on line 1
   only, since some Windows editors add one.
-- `NaN`, `Infinity`, deeply nested values and integers too long for Python to convert
-  are `BAD_JSON`. The first two are not JSON (RFC 8259), even though Python accepts them
-  by default.
+- `NaN`, `Infinity` and integers too long for Python to convert are `BAD_JSON`. The first
+  two are not JSON (RFC 8259), even though Python accepts them by default.
+- JSON nested too deeply for the parser is `BAD_JSON`. How deep that is depends on the
+  Python version and platform: 100,000 levels exhausts it on Windows but parses on Linux
+  with Python 3.14, where the result is then `INVALID_RECORD` because it is not an
+  object. Either way the line is rejected and processing continues.
 - Valid JSON that is not an object (`[]`, `"x"`, `null`) is `INVALID_RECORD`: it is JSON,
   just not a record.
 - A repeated key (`{"sequence": 1, "sequence": 2, ...}`) is `INVALID_RECORD`. Python's

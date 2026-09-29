@@ -69,3 +69,21 @@ them and the test that now guards them.
   `TestClient` is deprecated in favour of `httpx2`, Pydantic's maintained fork. The dev
   dependency was switched, and pytest now treats every warning as an error so this kind
   of drift fails the build (`96590bd`).
+
+## 6. A test that only passed on some platforms
+
+- **Symptom:** on the first CI run, 9 of 10 jobs passed, but Ubuntu with Python 3.14.7
+  failed. A test fed 100,000 levels of nested brackets and expected `BAD_JSON` ("JSON is
+  nested too deeply"); that platform returned `INVALID_RECORD`. Coverage also dropped
+  below 100%, because the `RecursionError` handler never ran there.
+- **Cause:** the test assumed that depth always makes Python's parser raise
+  `RecursionError`. How deep the parser can go depends on the Python version and the
+  platform's stack size. On Windows it raises; on Linux with Python 3.14 it parses the
+  array, which is valid JSON but not an object, so `INVALID_RECORD` is the correct
+  answer there. The code was right; the test and the README wording were not.
+- **Found by:** the CI matrix (Ubuntu and Windows, Python 3.11 to 3.14). Local runs on
+  Windows and WSL had passed.
+- **Fix:** the `RecursionError` handling is now tested deterministically by simulating
+  the error. Real deep nesting is tested only for what holds everywhere: the line is
+  rejected with one of the two codes and processing continues. The README describes the
+  platform dependence.

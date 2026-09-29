@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -49,7 +50,6 @@ def _too_long_number() -> str:
             id="infinity",
         ),
         pytest.param("-Infinity", "non-standard JSON constant -Infinity", id="negative-infinity"),
-        pytest.param("[" * 100_000 + "]" * 100_000, "JSON is nested too deeply", id="deep-nesting"),
         pytest.param(
             # The object repeats a key, but the line as a whole is not valid JSON, so the
             # syntax error wins: BAD_JSON, not INVALID_RECORD.
@@ -82,6 +82,41 @@ def test_malformed_json_reason_points_at_the_real_column(
     assert result["errors"][0]["reason"] == (
         f"malformed JSON: Expecting ',' delimiter at column {len(truncated) + 1}"
     )
+
+
+def test_parser_recursion_error_is_bad_json_and_processing_continues(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Simulated, because whether a given depth really exhausts the parser depends on the
+    # Python version and the platform's stack size (see the next test).
+    real_loads = json.loads
+
+    def loads(text: str, **kwargs: Any) -> Any:
+        if text.startswith("["):
+            raise RecursionError("maximum recursion depth exceeded while decoding a JSON array")
+        return real_loads(text, **kwargs)
+
+    monkeypatch.setattr(json, "loads", loads)
+
+    result = summarise_lines(["[[[]]]", VALID]).to_dict()
+
+    assert error_codes(result) == [(1, "BAD_JSON")]
+    assert result["errors"][0]["reason"] == "JSON is nested too deeply"
+    assert result["accepted"] == 1
+
+
+def test_deeply_nested_json_is_rejected_without_stopping_processing() -> None:
+    # CPython raises RecursionError for this depth on some platforms (-> BAD_JSON) and
+    # parses it on others, e.g. Python 3.14 on Linux, where the array is then rejected
+    # because it is not an object (-> INVALID_RECORD). Either way it is rejected and the
+    # next line is still processed.
+    deep = "[" * 100_000 + "]" * 100_000
+
+    result = summarise_lines([deep, VALID]).to_dict()
+
+    assert [line for line, _ in error_codes(result)] == [1]
+    assert error_codes(result)[0][1] in {"BAD_JSON", "INVALID_RECORD"}
+    assert result["accepted"] == 1
 
 
 def test_number_too_long_to_convert_is_bad_json() -> None:

@@ -95,7 +95,7 @@ src\device_summary\summary.py      157      0     44      0   100%
 ------------------------------------------------------------------
 TOTAL                              271      0     46      0   100%
 Required test coverage of 100.0% reached. Total coverage: 100.00%
-124 passed
+126 passed
 ```
 
 Coverage only shows that code ran, so two more checks show the tests actually test

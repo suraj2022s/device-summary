@@ -44,8 +44,8 @@ property-based tests, the HTTP API and CLI, CI and Docker, and the documentation
   on Windows and on Ubuntu (WSL); CI runs Ubuntu and Windows with Python 3.11–3.14 and
   builds the Docker image.
 - **Mistakes the AI made, and how they were caught:** it once claimed in a commit message
-  that a fix was done when it was not, and it removed code as "redundant" that affected
-  error messages. A byte scan and a check of the real output caught these; both are
-  written up in [docs/DEFECTS.md](docs/DEFECTS.md) with the regression tests that now
-  guard them. My takeaway: AI output counts as unverified until a test or a real run
-  confirms it.
+  that a fix was done when it was not; it removed code as "redundant" that affected
+  error messages; and it wrote a test that assumed platform-specific parser behaviour.
+  A byte scan, a check of the real output and the CI matrix caught these; all are
+  written up in [docs/DEFECTS.md](docs/DEFECTS.md) with the tests that now guard them.
+  My takeaway: AI output counts as unverified until a test or a real run confirms it.
