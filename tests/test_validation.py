@@ -84,7 +84,9 @@ def test_invalid_record_is_reported_and_processing_continues(line: str, reason: 
     ("line", "device_id", "sequence"),
     [
         pytest.param(record("D01", 0, "ok"), "D01", 0, id="sequence-zero"),
-        pytest.param('{"device_id": "D01", "sequence": -0, "status": "ok"}', "D01", 0, id="minus-0"),
+        pytest.param(
+            '{"device_id": "D01", "sequence": -0, "status": "ok"}', "D01", 0, id="minus-0"
+        ),
         pytest.param(record("D01", 2**70, "ok"), "D01", 2**70, id="sequence-huge"),
         pytest.param(record(" D01 ", 1, "ok"), " D01 ", 1, id="device-id-kept-with-spaces"),
         pytest.param(record("设备-1", 1, "ok"), "设备-1", 1, id="device-id-unicode"),

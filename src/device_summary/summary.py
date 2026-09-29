@@ -12,6 +12,7 @@ Valid records are then deduplicated on (device_id, sequence) and aggregated per 
 
 from __future__ import annotations
 
+import codecs
 import json
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -23,7 +24,7 @@ Status = Literal["ok", "error"]
 
 REQUIRED_FIELDS = frozenset({"device_id", "sequence", "status"})
 VALID_STATUSES = frozenset({"ok", "error"})
-UTF8_BOM = "﻿"
+UTF8_BOM = codecs.BOM_UTF8.decode("utf-8")
 
 
 class ErrorCode(StrEnum):
@@ -134,10 +135,10 @@ def _reject_constant(name: str) -> Any:
 
 
 def _decode(raw: str | bytes, line_number: int) -> str:
-    """Step 1: return the line as text.
+    """Step 1: return the line as text without its "\\n" or "\\r\\n" line ending.
 
-    The trailing "\\n" or "\\r\\n" is left in place: JSON ignores surrounding whitespace,
-    and the blank-line check below strips it.
+    JSON would ignore the line ending anyway, but leaving it in makes the parser report
+    errors at the end of a line as "line 2, column 1" instead of the real column.
     """
     if isinstance(raw, bytes):
         try:
@@ -149,7 +150,7 @@ def _decode(raw: str | bytes, line_number: int) -> str:
     if line_number == 1:
         # JSON Lines forbids a byte order mark, but some Windows editors add one.
         text = text.removeprefix(UTF8_BOM)
-    return text
+    return text.removesuffix("\n").removesuffix("\r")
 
 
 def _parse(text: str) -> Any:

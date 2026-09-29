@@ -67,6 +67,23 @@ def test_bad_json_is_reported_and_processing_continues(line: str | bytes, reason
     assert result["accepted"] == 1
 
 
+@pytest.mark.parametrize("line_ending", [b"\n", b"\r\n"], ids=["lf", "crlf"])
+def test_malformed_json_reason_points_at_the_real_column(
+    line_ending: bytes, tmp_path: Path
+) -> None:
+    # Regression test: the line ending used to be passed to the parser, which then
+    # reported an error at the end of the line as "column 1" (of an imaginary line 2).
+    truncated = '{"device_id": "D03", "sequence": 1, "status": "ok"'
+    path = tmp_path / "truncated.jsonl"
+    path.write_bytes(truncated.encode() + line_ending)
+
+    result = summarise_file(path).to_dict()
+
+    assert result["errors"][0]["reason"] == (
+        f"malformed JSON: Expecting ',' delimiter at column {len(truncated) + 1}"
+    )
+
+
 def test_number_too_long_to_convert_is_bad_json() -> None:
     line = f'{{"device_id": "D01", "sequence": {_too_long_number()}, "status": "ok"}}'
 
@@ -123,7 +140,7 @@ def test_extra_blank_line_at_end_of_file_is_bad_json(tmp_path: Path) -> None:
 
 def test_unicode_line_separator_inside_a_string_does_not_split_the_line(tmp_path: Path) -> None:
     # str.splitlines() would split on U+2028; JSON Lines only splits on "\n".
-    device_id = "D 01"
+    device_id = "D\N{LINE SEPARATOR}01"
     line = json.dumps({"device_id": device_id, "sequence": 1, "status": "ok"}, ensure_ascii=False)
     path = tmp_path / "separator.jsonl"
     path.write_text(line + "\n", encoding="utf-8")

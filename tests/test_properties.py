@@ -114,8 +114,8 @@ def test_every_line_is_counted_exactly_once(items: list[Valid | Bad]) -> None:
     result = summarise_lines(_as_lines(items)).to_dict()
 
     assert result["accepted"] + result["duplicates"] + len(result["errors"]) == len(items)
-    assert sum(device["ok"] + device["error"] for device in result["devices"]) == (
-        result["accepted"]
+    assert (
+        sum(device["ok"] + device["error"] for device in result["devices"]) == (result["accepted"])
     )
 
 
