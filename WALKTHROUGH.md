@@ -28,7 +28,7 @@ call the endpoint (headers trimmed):
 
 ```
 > uv run uvicorn device_summary.api:app
-> curl -i http://127.0.0.1:8000/summary
+> curl.exe -i http://127.0.0.1:8000/summary
 HTTP/1.1 200 OK
 content-type: application/json
 
@@ -45,9 +45,9 @@ because its only line was malformed. The CLI prints the same JSON without a serv
 Point the server at a file that does not exist:
 
 ```
-> $env:DEVICE_SUMMARY_FILE = "D:\device-summary\data\missing.jsonl"
+> $env:DEVICE_SUMMARY_FILE = "missing.jsonl"
 > uv run uvicorn device_summary.api:app
-> curl -i http://127.0.0.1:8000/summary
+> curl.exe -i http://127.0.0.1:8000/summary
 HTTP/1.1 500 Internal Server Error
 content-type: application/problem+json
 
@@ -56,10 +56,10 @@ content-type: application/problem+json
 
 The brief says a read failure must not look like an empty successful result, so this
 is a 500 in the standard RFC 9457 problem format, never a 200 with zeros. The client
-sees only the file name; the server log has the full path and the OS error:
+sees only the file name; the server log has the configured path and the OS error:
 
 ```
-Cannot read input file D:\device-summary\data\missing.jsonl: [Errno 2] No such file or directory: 'D:\\device-summary\\data\\missing.jsonl'
+Cannot read input file missing.jsonl: [Errno 2] No such file or directory: 'missing.jsonl'
 ```
 
 A wrong method gets the same format: `POST /summary` returns `405` with `Allow: GET`.
