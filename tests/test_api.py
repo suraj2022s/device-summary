@@ -122,6 +122,32 @@ def test_http_exception_with_custom_detail_keeps_the_detail() -> None:
     assert response.json()["detail"] == "Short and stout."
 
 
+@pytest.mark.parametrize(
+    ("status_code", "detail", "title", "expected_detail"),
+    [
+        pytest.param(499, "Client closed request", "Error", "Client closed request", id="499"),
+        pytest.param(400, {"field": "x"}, "Bad Request", '{"field": "x"}', id="dict-detail"),
+    ],
+)
+def test_unusual_http_exceptions_still_return_problem_details(
+    status_code: int, detail: object, title: str, expected_detail: str
+) -> None:
+    # Regression test: a status code the standard library does not name, or a non-string
+    # detail, used to crash the error handler itself.
+    app = create_app(Settings(source=SAMPLE_PATH))
+
+    @app.get("/unusual")
+    def unusual() -> None:
+        raise HTTPException(status_code=status_code, detail=detail)
+
+    response = TestClient(app, raise_server_exceptions=False).get("/unusual")
+
+    assert response.status_code == status_code
+    assert response.headers["content-type"] == PROBLEM_JSON
+    assert response.json()["title"] == title
+    assert response.json()["detail"] == expected_detail
+
+
 def test_unexpected_error_returns_generic_problem_without_internal_details() -> None:
     app = create_app(Settings(source=SAMPLE_PATH))
 

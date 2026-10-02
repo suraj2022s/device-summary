@@ -18,7 +18,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import StrEnum
 from os import PathLike
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 Status = Literal["ok", "error"]
 
@@ -70,10 +70,10 @@ class DeviceSummary:
 class Summary:
     """The result of processing one input."""
 
-    accepted: int = 0
-    duplicates: int = 0
-    errors: tuple[LineError, ...] = ()
-    devices: tuple[DeviceSummary, ...] = ()
+    accepted: int
+    duplicates: int
+    errors: tuple[LineError, ...]
+    devices: tuple[DeviceSummary, ...]
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -203,10 +203,13 @@ def _validate(value: Any) -> _Record:
         raise invalid("sequence must be an integer greater than or equal to 0")
 
     status = value["status"]
-    if status not in VALID_STATUSES:
+    # Check the type first: a JSON array or object is unhashable, and testing it against
+    # the set would raise TypeError and stop the whole run instead of rejecting one line.
+    if not isinstance(status, str) or status not in VALID_STATUSES:
         raise invalid("status must be 'ok' or 'error'")
 
-    return _Record(device_id=device_id, sequence=sequence, status=status)
+    # The check above guarantees one of the two literals; mypy can only infer str.
+    return _Record(device_id=device_id, sequence=sequence, status=cast(Status, status))
 
 
 def _json_type_name(value: Any) -> str:
@@ -283,8 +286,9 @@ def summarise_file(path: str | PathLike[str]) -> Summary:
     """Summarise a JSON Lines file.
 
     The file is read as a binary stream and split on ``\\n`` only, so a line separator
-    character inside a JSON string (such as U+2028) does not split a record, and memory
-    use does not grow with line count beyond the per-device and duplicate-tracking state.
+    character inside a JSON string (such as U+2028) does not split a record. The file is
+    never held in memory as a whole; memory grows with the number of devices, unique
+    (device_id, sequence) pairs and rejected lines, since every error is reported.
     Raises OSError if the file cannot be opened or read.
     """
     with open(path, "rb") as handle:

@@ -8,11 +8,12 @@ client can tell a failure apart from a successful but empty summary.
 
 from __future__ import annotations
 
+import json
 import logging
 from collections.abc import Mapping
 from http import HTTPStatus
 from importlib.metadata import version
-from typing import Any, Literal
+from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,7 +22,7 @@ from pydantic import BaseModel, ConfigDict
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from device_summary.settings import Settings
-from device_summary.summary import summarise_file
+from device_summary.summary import ErrorCode, Status, summarise_file
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ SOURCE_UNAVAILABLE_TYPE = "https://github.com/suraj2022s/device-summary#source-u
 
 class LineErrorModel(BaseModel):
     line: int
-    code: Literal["BAD_JSON", "INVALID_RECORD"]
+    code: ErrorCode
     reason: str
 
 
@@ -40,7 +41,7 @@ class DeviceModel(BaseModel):
     ok: int
     error: int
     last_sequence: int
-    last_status: Literal["ok", "error"]
+    last_status: Status
 
 
 class SummaryModel(BaseModel):
@@ -118,6 +119,13 @@ def _problem_schema() -> dict[str, Any]:
     return {PROBLEM_JSON: {"schema": ProblemModel.model_json_schema()}}
 
 
+def _status_phrase(status: int) -> str:
+    try:
+        return HTTPStatus(status).phrase
+    except ValueError:  # a code the standard library does not name, such as 499
+        return "Error"
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
     """Build the application. Tests pass explicit settings; otherwise the environment is read."""
     settings = settings or Settings.from_env()
@@ -149,12 +157,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error(request: Request, exc: StarletteHTTPException) -> JSONResponse:
-        title = HTTPStatus(exc.status_code).phrase
+        title = _status_phrase(exc.status_code)
+        # FastAPI allows any JSON-serialisable detail; problem details need a string.
+        detail = exc.detail if isinstance(exc.detail, str) else json.dumps(exc.detail)
         return problem_response(
             ProblemModel(
                 title=title,
                 status=exc.status_code,
-                detail=exc.detail if exc.detail != title else None,
+                detail=detail if detail != title else None,
                 instance=request.url.path,
             ),
             headers=exc.headers,

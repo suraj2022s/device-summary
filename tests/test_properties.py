@@ -30,6 +30,8 @@ INVALID_LINES = [
     record("D01", -1, "ok"),
     record("D01", True, "ok"),
     record("D01", 1, "OK"),
+    record("D01", 1, []),
+    record("D01", 1, {}),
 ]
 DEVICE_IDS = ["D01", "D02", " D01", "d01", "设备"]
 

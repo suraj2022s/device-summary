@@ -70,6 +70,12 @@ def _without(field: str) -> str:
         pytest.param(_fields(status=""), "status must be", id="status-empty"),
         pytest.param(_fields(status=None), "status must be", id="status-null"),
         pytest.param(_fields(status=1), "status must be", id="status-number"),
+        # Arrays and objects are unhashable in Python; these once crashed the whole run.
+        pytest.param(_fields(status=[]), "status must be", id="status-array"),
+        pytest.param(_fields(status={}), "status must be", id="status-object"),
+        pytest.param(_fields(device_id={}), "device_id must be", id="device-id-object"),
+        pytest.param(_fields(sequence=[]), "sequence must be", id="sequence-array"),
+        pytest.param(_fields(sequence={}), "sequence must be", id="sequence-object"),
     ],
 )
 def test_invalid_record_is_reported_and_processing_continues(line: str, reason: str) -> None:

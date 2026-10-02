@@ -100,3 +100,49 @@ them and the test that now guards them.
   so the reason reads `Unterminated string starting at column 21`.
 - **Guarded by:** `test_malformed_json_reason_does_not_repeat_at`, which fails without
   the fix.
+
+## 8. A `status` array or object crashed the whole run
+
+- **Symptom:** `{"device_id": "a", "sequence": 1, "status": []}` (or `"status": {}`) made
+  `summarise_lines` raise `TypeError: unhashable type: 'list'`. One bad line stopped the
+  whole summary: `GET /summary` returned a generic 500 and every valid line was lost,
+  breaking the brief's "continue after each error" rule.
+- **Cause:** `status not in VALID_STATUSES` checks membership in a set, which hashes the
+  value; JSON arrays and objects become unhashable Python lists and dicts. The other
+  fields were safe because their type is checked first.
+- **Found by:** a full code review of the repository. The validation tests covered
+  `null`, numbers and wrong strings for `status`, but not arrays or objects, and the
+  property tests' pool of invalid lines did not include them either.
+- **Fix:** check `isinstance(status, str)` before the membership test.
+- **Guarded by:** `status-array` and `status-object` cases (plus array and object cases
+  for the other two fields), both shapes added to the property tests' invalid lines, and
+  a matching planted bug in `scripts/check_mutations.py`.
+
+## 9. Other findings from the same review
+
+Fixed:
+
+- **The error handler could crash on unusual errors.** A status code that Python's
+  `HTTPStatus` does not name (such as 499) or a non-string `detail` made the handler
+  itself fail, so the client got plain text instead of problem details. Unknown codes
+  now get the title "Error" and non-string details are JSON-encoded
+  (`test_unusual_http_exceptions_still_return_problem_details`).
+- **The mutation script could test stale bytecode.** It rewrites `summary.py` in place;
+  two mutations of the same size written within one second could reuse the previous
+  mutation's cached `.pyc`. The test runs now set `PYTHONDONTWRITEBYTECODE=1`.
+- **The API repeated the error-code and status types** as hand-written literals; it now
+  reuses `ErrorCode` and `Status` from the core, so the two cannot drift apart.
+- **Dead code:** unused default values on `Summary` were removed.
+- **Inaccurate documentation:** the memory description now counts rejected lines, and
+  the default input file is documented as applying to a source checkout.
+
+Considered and left as they are:
+
+- **The response is converted twice** (dataclasses, then Pydantic models). This is the
+  standard FastAPI pattern: it validates the output and documents it in OpenAPI, and the
+  cost is negligible at this size.
+- **A line of only Unicode spaces (such as U+00A0) is called "blank".** It is visually
+  blank and gets the same `BAD_JSON` code; only the reason text differs from strict
+  JSON whitespace rules.
+- **The CLI prints a traceback when its output pipe closes early** (`| head`). Listed in
+  the README under unfinished work.

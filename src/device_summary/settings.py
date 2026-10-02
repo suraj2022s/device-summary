@@ -11,6 +11,9 @@ SOURCE_ENV = "DEVICE_SUMMARY_FILE"
 CORS_ORIGINS_ENV = "DEVICE_SUMMARY_CORS_ORIGINS"
 
 # The sample shipped in the repository (src/device_summary/ -> repository root -> data/).
+# This only resolves from a source checkout or an editable install (what uv, the README's
+# pip instructions and the Dockerfile use); data/ is not packaged into a wheel, so a
+# regular `pip install .` must set DEVICE_SUMMARY_FILE.
 DEFAULT_SOURCE = Path(__file__).resolve().parents[2] / "data" / "sample.jsonl"
 
 

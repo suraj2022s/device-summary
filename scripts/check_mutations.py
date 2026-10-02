@@ -9,6 +9,7 @@ Usage:  uv run python scripts/check_mutations.py
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -43,6 +44,10 @@ MUTATIONS = {
         "not isinstance(device_id, str) or not device_id",
     ),
     "extra fields allowed": ("if missing or unexpected:", "if missing:"),
+    "status type not checked (array or object crashes the run)": (
+        "if not isinstance(status, str) or status not in VALID_STATUSES:",
+        "if status not in VALID_STATUSES:",
+    ),
     "NaN and Infinity accepted": (
         "object_pairs_hook=_build_object, parse_constant=_reject_constant",
         "object_pairs_hook=_build_object",
@@ -83,6 +88,10 @@ def main() -> int:
                 cwd=ROOT,
                 capture_output=True,
                 check=False,
+                # Without this, two mutations of the same size written in the same second
+                # could reuse the previous mutation's cached bytecode (.pyc), which Python
+                # validates by source size and whole-second modification time.
+                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
             )
             caught = result.returncode != 0
             print(f"{'caught' if caught else 'MISSED'}  {name}")

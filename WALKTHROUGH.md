@@ -88,21 +88,21 @@ Name                             Stmts   Miss Branch BrPart  Cover
 ------------------------------------------------------------------
 src\device_summary\__init__.py       2      0      0      0   100%
 src\device_summary\__main__.py       2      0      0      0   100%
-src\device_summary\api.py           75      0      2      0   100%
+src\device_summary\api.py           82      0      2      0   100%
 src\device_summary\cli.py           17      0      0      0   100%
 src\device_summary\settings.py      18      0      0      0   100%
-src\device_summary\summary.py      157      0     44      0   100%
+src\device_summary\summary.py      158      0     44      0   100%
 ------------------------------------------------------------------
-TOTAL                              271      0     46      0   100%
+TOTAL                              279      0     46      0   100%
 Required test coverage of 100.0% reached. Total coverage: 100.00%
-126 passed
+134 passed
 ```
 
 Coverage only shows that code ran, so two more checks show the tests actually test
 something. A Hypothesis property test compares the output with a plain restatement of
 the brief on random inputs. `uv run python scripts/check_mutations.py` breaks one rule at
 a time in `summary.py` (booleans accepted, duplicates not recorded, devices not sorted,
-and so on) and confirms the suite fails every time: 15 of 15.
+and so on) and confirms the suite fails every time: 16 of 16.
 
 ## 5. One design choice: decode, then parse, then validate (3:15 to 4:00)
 

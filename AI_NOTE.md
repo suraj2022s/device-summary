@@ -36,8 +36,12 @@ property-based tests, the HTTP API and CLI, CI and Docker, and the documentation
 
 - **Tests:** the brief's three tests plus edge-case, API, CLI and property-based tests;
   100% line and branch coverage is enforced; warnings fail the build.
-- **Tests of the tests:** `scripts/check_mutations.py` plants 15 bugs, one at a time; the
-  suite catches all 15.
+- **Tests of the tests:** `scripts/check_mutations.py` plants 16 bugs, one at a time; the
+  suite catches all 16.
+- **Full code review:** a review pass over the whole codebase found one real crash (a
+  `status` that is a JSON array or object stopped the whole run), a latent crash in the
+  error handler, and some stale documentation; all were fixed with regression tests and
+  are listed in [docs/DEFECTS.md](docs/DEFECTS.md).
 - **Real runs:** the server was started with Uvicorn and called with `curl` for the
   sample (200), a missing file (500 problem details) and a wrong method (405). The
   Docker image was also built and run locally (Docker Engine in WSL): 200 for the

@@ -96,7 +96,7 @@ uv run mypy
 uv run python scripts/check_mutations.py
 ```
 
-The last one plants 15 deliberate bugs in `summary.py`, one at a time, and confirms the
+The last one plants 16 deliberate bugs in `summary.py`, one at a time, and confirms the
 tests catch every one; the file is restored afterwards.
 
 **With pip**
@@ -125,7 +125,7 @@ The container runs as a non-root user and has a health check on `/health`.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `DEVICE_SUMMARY_FILE` | `data/sample.jsonl` in this repository | JSON Lines file to summarise. Read on every request. |
+| `DEVICE_SUMMARY_FILE` | `data/sample.jsonl` in this repository (when run from a checkout, as in every command above) | JSON Lines file to summarise. Read on every request. |
 | `DEVICE_SUMMARY_CORS_ORIGINS` | empty (CORS off) | Comma-separated browser origins allowed to call the API, e.g. `http://localhost:5173`. |
 
 ## API
@@ -202,8 +202,8 @@ Where the brief leaves room for interpretation, these are the choices made (each
 - **Rules live in a pure module.** `summary.py` has no web code, so every rule is tested
   directly; the API and CLI are thin layers on top.
 - **Streaming read.** The file is read line by line in binary mode and never held in
-  memory as a whole; memory grows only with the number of devices and unique
-  `(device_id, sequence)` pairs.
+  memory as a whole; memory grows with the number of devices, unique
+  `(device_id, sequence)` pairs and rejected lines (every error is reported).
 - **Fresh data per request.** `/summary` re-reads the file each time, so edits show up
   immediately without restarting the server.
 - **Tests that prove the tests.** A reference-model property test (Hypothesis) compares
@@ -247,6 +247,8 @@ deliberate choice to go further, and is listed separately so it can be judged on
   image.
 - No authentication, rate limiting or TLS: this is a local tool behind no network edge.
 - Logging is plain text from the standard library; no structured logs or metrics.
+- The CLI does not exit quietly when its output pipe closes early (for example
+  `device-summary big.jsonl | head`); it prints a `BrokenPipeError` traceback.
 - Error `reason` text includes messages from Python's `json` module, which could be
   worded differently in a future Python version (tests pin one message).
 
