@@ -87,3 +87,16 @@ them and the test that now guards them.
   the error. Real deep nesting is tested only for what holds everywhere: the line is
   rejected with one of the two codes and processing continues. The README describes the
   platform dependence.
+
+## 7. "at at" in an error reason
+
+- **Symptom:** for a line cut off in the middle of a string, the reason read
+  `malformed JSON: Unterminated string starting at at column 21`.
+- **Cause:** some of Python's JSON error messages already end in "at" (they are meant to
+  be followed by a position), and the reason appended " at column N" after them.
+- **Found by:** running the CLI on a hand-written example file while explaining the
+  project; no existing test used an unterminated string.
+- **Fix:** a trailing " at" is dropped from Python's message before the column is added,
+  so the reason reads `Unterminated string starting at column 21`.
+- **Guarded by:** `test_malformed_json_reason_does_not_repeat_at`, which fails without
+  the fix.

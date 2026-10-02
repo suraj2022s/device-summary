@@ -160,7 +160,9 @@ def _parse(text: str) -> Any:
     try:
         return json.loads(text, object_pairs_hook=_build_object, parse_constant=_reject_constant)
     except json.JSONDecodeError as exc:
-        reason = f"malformed JSON: {exc.msg} at column {exc.colno}"
+        # Some messages already end in "at" ("Unterminated string starting at"); avoid "at at".
+        message = exc.msg.removesuffix(" at")
+        reason = f"malformed JSON: {message} at column {exc.colno}"
         raise _RejectedError(ErrorCode.BAD_JSON, reason) from None
     except RecursionError:
         raise _RejectedError(ErrorCode.BAD_JSON, "JSON is nested too deeply") from None

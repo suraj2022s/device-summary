@@ -67,6 +67,16 @@ def test_bad_json_is_reported_and_processing_continues(line: str | bytes, reason
     assert result["accepted"] == 1
 
 
+def test_malformed_json_reason_does_not_repeat_at() -> None:
+    # Regression test: Python's message "Unterminated string starting at" used to be
+    # followed by " at column 21", giving "starting at at column 21".
+    result = summarise_lines(['{"device_id": "P1", "sequen']).to_dict()
+
+    assert result["errors"][0]["reason"] == (
+        "malformed JSON: Unterminated string starting at column 21"
+    )
+
+
 @pytest.mark.parametrize("line_ending", [b"\n", b"\r\n"], ids=["lf", "crlf"])
 def test_malformed_json_reason_points_at_the_real_column(
     line_ending: bytes, tmp_path: Path
