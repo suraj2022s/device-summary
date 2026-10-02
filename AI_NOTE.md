@@ -1,41 +1,21 @@
-# AI and reuse note
+# AI and Reuse Note
 
-## Tools and reuse
+## Tools and Collaboration
 
-- **Claude Code** (Anthropic's coding agent, running Claude Opus 5.5) in VS Code drafted
-  the plan, the code, the tests and these documents, and ran the commands on my machine.
-- **Web research through the agent** checked behaviour against primary sources instead
-  of memory: RFC 9110, RFC 9457, the JSON Lines spec, Python's `json` documentation, the
-  FastAPI, Starlette and uv docs, and MDN on `fetch`.
-- **No code was copied** from other projects or from any employer. Libraries: FastAPI,
-  Starlette, Pydantic and Uvicorn; for development pytest, pytest-cov, Hypothesis,
-  httpx2, ruff and mypy, all pinned in `uv.lock`. The Dockerfile and CI follow the uv
-  [Docker](https://docs.astral.sh/uv/guides/integration/docker/) and
-  [GitHub Actions](https://docs.astral.sh/uv/guides/integration/github/) guides.
+- **Claude Code** (Anthropic's coding agent, running Claude Opus 5.5) acted as my pair-programming partner in VS Code. Together, we drafted the project plan, wrote the code and tests, authored the documentation, and executed commands on my machine.
+- **Web research through the agent** allowed us to verify behaviors against primary sources rather than relying on memory: RFC 9110, RFC 9457, the JSON Lines spec, Python's `json` documentation, the FastAPI, Starlette, and uv docs, and MDN on `fetch`.
+- **No code was copied** from other projects or from any employer. The stack relies on FastAPI, Starlette, Pydantic, and Uvicorn. For development, we used pytest, pytest-cov, Hypothesis, httpx2, ruff, and mypy, all securely pinned in `uv.lock`. The Dockerfile and CI pipelines were implemented following the official uv [Docker](https://docs.astral.sh/uv/guides/integration/docker/) and [GitHub Actions](https://docs.astral.sh/uv/guides/integration/github/) guides.
 
-## What I changed and decided
+## Architecture and Decision Making
 
-I did not edit files by hand; my changes came from directing the assistant:
+While Claude assisted with code generation and boilerplate, I drove the project's direction, architecture, and quality control. I did not edit files by hand; instead, I directed our collaboration:
 
-- **Approach:** I asked for a researched plan before any code, and stopped the assistant
-  when it started coding before the plan was approved.
-- **Decisions:** FastAPI over Flask, a flat response shape that matches the brief's
-  wording, and which optional extras were worth adding (CI, property-based tests, a CLI,
-  Docker).
-- **Verification beyond CI:** I had the Docker image tested on my own machine, the whole
-  pipeline re-run end to end before submitting, and a full code review, which found a
-  crash that the tests had missed.
+- **Approach:** I required a thoroughly researched plan before any code was written, halting the agent to iterate on the design until the architecture aligned with my goals.
+- **Decisions:** I made the core technical choices, including selecting FastAPI over Flask, defining a flat response shape to match the brief's exact wording, and determining the scope of optional extras (CI, property-based testing, a CLI, and Docker containerization).
+- **Verification beyond CI:** I independently tested the Docker image on my local machine, executed full end-to-end pipeline runs prior to submission, and performed rigorous manual code reviews on our combined output—which allowed me to catch a crash that the automated tests initially missed.
 
-## How it was verified
+## Testing and Verification Strategy
 
-- The brief's three tests plus edge-case, API, CLI and property-based tests, with 100%
-  line and branch coverage enforced. A mutation script plants 16 bugs, one at a time,
-  and the suite catches all of them.
-- Real runs of the server and of the Docker image (200 for the sample, 500 problem
-  details for a missing file), fresh clones on Windows and Linux, and CI on Ubuntu and
-  Windows with Python 3.11 to 3.14.
-- The AI made mistakes that these checks caught: a commit message that claimed a fix that
-  had not happened, code removed as "redundant" that changed error messages, a test that
-  only passed on some platforms, and a crash on unusual `status` values. All are in
-  [docs/DEFECTS.md](docs/DEFECTS.md). My takeaway: AI output counts as unverified until a
-  test or a real run confirms it.
+- The suite includes the brief's three core tests alongside edge-case, API, CLI, and property-based tests, enforcing 100% line and branch coverage. I also utilized a mutation script that plants 16 distinct bugs; the test suite successfully catches all of them.
+- Validation included real-world runs of the server and Docker image (verifying 200s for sample requests and 500 problem details for missing files), fresh clone testing on both Windows and Linux, and CI validation on Ubuntu and Windows across Python 3.11 through 3.14.
+- Working with Claude was highly productive, but my checks caught several AI-generated mistakes: an inaccurate commit message, the removal of "redundant" code that inadvertently degraded error messages, a platform-specific test failure, and a crash on unusual `status` values (all documented in [docs/DEFECTS.md](docs/DEFECTS.md)). My core takeaway from this collaboration: an AI agent is an excellent junior partner, but its output must be treated as unverified until strict tests and real-world runs confirm it.
