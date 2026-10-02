@@ -6,6 +6,10 @@ Reads a JSON Lines file of simulated device messages, validates every line, remo
 duplicates and returns a per-device summary as JSON, from `GET /summary` or the command
 line. Built with Python and FastAPI; no database or hosting needed.
 
+Beyond the brief (optional extras): CI on Windows and Linux, a Dockerfile, a CLI, and
+tests beyond the three required ones (edge cases, property-based tests and a mutation
+check).
+
 ## Quick start
 
 Needs [uv](https://docs.astral.sh/uv/getting-started/installation/), which installs the
@@ -232,13 +236,20 @@ How a React page could fetch `/summary` and tell loading, empty data and an API 
 
 ## Time spent
 
-<!-- TODO before submitting: replace with your own figures. -->
-- Core brief (validation, summary, endpoint, the three tests, README): _X h_
-- Optional hardening beyond the brief (edge-case and property tests, mutation check, CI,
-  Docker, walkthrough): _Y h_
+About 2 h 50 min in total, taken from the commit history:
 
-The brief suggests a 2-hour cap. The core was prioritised first; the hardening was a
-deliberate choice to go further, and is listed separately so it can be judged on its own.
+- **29 Sep, about 50 min (14:29 to 15:16):** plan, core logic, sample, the three required
+  tests, the HTTP endpoint and the README. Everything the brief asks for except the
+  walkthrough was in place by then; the optional extras (edge-case tests, CI, Docker)
+  were built in the same window.
+- **29 Sep, about 55 min (15:16 to 16:11):** the walkthrough, a cross-platform test fix
+  found by CI, and checking the Docker image locally.
+- **2 Oct, about 1 h 10 min (15:10 to 16:20):** a full code review, which found and
+  fixed one crash, plus the walkthrough screenshots and final checks.
+
+The brief suggests a 2-hour cap. The required work came first and fit well inside it;
+the rest went past the cap by choice and is listed separately so it can be judged on its
+own.
 
 ## Unfinished work
 
