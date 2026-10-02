@@ -2,9 +2,10 @@
 
 The written version of the 5-minute walkthrough: the same steps as the recording, with
 real output captured from this repository. The timings in the headings are the
-recording plan. The screenshots in [docs/images](docs/images) were captured from the
-running server on 2 October 2026 with Microsoft Edge (headless, driven by Playwright);
-terminal output is shown as text.
+recording plan. The browser screenshots in [docs/images](docs/images) were captured
+from the running server on 2 October 2026 with Microsoft Edge (headless, driven by
+Playwright). The two test images are the recorded output of the real test commands,
+rendered with the Rich library; the same output is also included as text.
 
 ## 1. What it does (0:00 to 0:30)
 
@@ -91,6 +92,10 @@ The brief's three tests are in [tests/test_required.py](tests/test_required.py).
 sample test runs twice, on inline lines and on the shipped file, and the empty-input
 test runs on no lines and on an empty file:
 
+![The brief's three required tests passing (5 test cases)](docs/images/05-required-tests.png)
+
+<details><summary>Same output as text</summary>
+
 ```
 > uv run pytest --no-cov -v tests/test_required.py
 tests/test_required.py::test_sample_matches_expected_summary[inline-lines] PASSED
@@ -101,7 +106,13 @@ tests/test_required.py::test_empty_input_returns_zero_totals_and_empty_lists[emp
 5 passed
 ```
 
+</details>
+
 The whole suite, with the coverage gate:
+
+![The full test suite: 134 passed with 100% line and branch coverage](docs/images/06-full-test-suite.png)
+
+<details><summary>Same output as text</summary>
 
 ```
 > uv run pytest
@@ -118,6 +129,8 @@ TOTAL                              279      0     46      0   100%
 Required test coverage of 100.0% reached. Total coverage: 100.00%
 134 passed
 ```
+
+</details>
 
 Coverage only shows that code ran, so two more checks show the tests actually test
 something. A Hypothesis property test compares the output with a plain restatement of
