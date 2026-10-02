@@ -236,7 +236,7 @@ How a React page could fetch `/summary` and tell loading, empty data and an API 
 
 ## Time spent
 
-About 2 h 50 min in total, taken from the commit history:
+About 3 h 20 min in total, taken from the commit history:
 
 - **29 Sep, about 50 min (14:29 to 15:16):** plan, core logic, sample, the three required
   tests, the HTTP endpoint and the README. Everything the brief asks for except the
@@ -244,7 +244,7 @@ About 2 h 50 min in total, taken from the commit history:
   were built in the same window.
 - **29 Sep, about 55 min (15:16 to 16:11):** the walkthrough, a cross-platform test fix
   found by CI, and checking the Docker image locally.
-- **2 Oct, about 1 h 10 min (15:10 to 16:20):** a full code review, which found and
+- **2 Oct, about 1 h 40 min (15:10 to 16:50):** a full code review, which found and
   fixed one crash, plus the walkthrough screenshots and final checks.
 
 The brief suggests a 2-hour cap. The required work came first and fit well inside it;

@@ -4,8 +4,8 @@ The written version of the 5-minute walkthrough: the same steps as the recording
 real output captured from this repository. The timings in the headings are the
 recording plan. The browser screenshots in [docs/images](docs/images) were captured
 from the running server on 2 October 2026 with Microsoft Edge (headless, driven by
-Playwright). The two test images are the recorded output of the real test commands,
-rendered with the Rich library; the same output is also included as text.
+Playwright). The two test images are screenshots of a Windows PowerShell console window
+running the real test commands; the same output is also included as text.
 
 ## 1. What it does (0:00 to 0:30)
 
