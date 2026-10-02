@@ -2,7 +2,9 @@
 
 The written version of the 5-minute walkthrough: the same steps as the recording, with
 real output captured from this repository. The timings in the headings are the
-recording plan.
+recording plan. The screenshots in [docs/images](docs/images) were captured from the
+running server on 2 October 2026 with Microsoft Edge (headless, driven by Playwright);
+terminal output is shown as text.
 
 ## 1. What it does (0:00 to 0:30)
 
@@ -40,6 +42,20 @@ error with last status `error` from sequence 3; D02 has one error. D03 never app
 because its only line was malformed. The CLI prints the same JSON without a server:
 `uv run device-summary data/sample.jsonl`.
 
+The same endpoint opened directly in the browser:
+
+![GET /summary opened in the browser, showing the raw JSON result](docs/images/03-summary-in-browser.png)
+
+FastAPI also serves interactive documentation at `/docs`, listing both endpoints and
+the response schemas:
+
+![Interactive API docs at /docs with GET /health, GET /summary and the schemas](docs/images/01-api-docs.png)
+
+Running `GET /summary` from there (**Try it out**, then **Execute**) shows the live
+response: code 200, the formatted summary and the response headers:
+
+![Live 200 response from GET /summary in the interactive docs](docs/images/02-summary-live-response.png)
+
 ## 3. Failure case (1:30 to 2:15)
 
 Point the server at a file that does not exist:
@@ -61,6 +77,11 @@ sees only the file name; the server log has the configured path and the OS error
 ```
 Cannot read input file missing.jsonl: [Errno 2] No such file or directory: 'missing.jsonl'
 ```
+
+The same failure in the interactive docs: code 500, content type
+`application/problem+json`, and a body that names the problem without exposing the path:
+
+![500 problem-details response when the input file is missing](docs/images/04-missing-file-500.png)
 
 A wrong method gets the same format: `POST /summary` returns `405` with `Allow: GET`.
 

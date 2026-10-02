@@ -1,3 +1,4 @@
 # Keep LF line endings in the repository and in checkouts on every OS, so the sample data
 # and test fixtures are byte-for-byte identical on Windows and Linux.
 * text=auto eol=lf
+*.png binary
